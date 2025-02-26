@@ -25,7 +25,7 @@
             text-align: center;
         }
         .bar {
-            transition: background-color 0.3s; /* Geçiş süresini artırdım */
+            transition: background-color 0.3s;
         }
         .long {
             width: 20px;
@@ -40,7 +40,7 @@
         }
         .hece {
             font-size: 12px;
-            transition: color 0.3s; /* Geçiş süresini artırdım */
+            transition: color 0.3s;
             margin-top: 5px;
             word-wrap: break-word;
             max-width: 20px;
@@ -53,7 +53,6 @@
             width: 20px;
             height: 40px;
         }
-        /* Daha koyu gökkuşağı renkleri */
         #vezin-0 .bar { background-color: #cc0000; }
         #vezin-0 .hece { color: #cc0000; }
         #vezin-1 .bar { background-color: #cc6600; }
@@ -94,10 +93,14 @@
 </head>
 <body>
     <h1>ARUZ VEZNİ</h1>
+    <div>
+        <a href="https://hits.seeyoufarm.com">
+            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdivanedebiyati.github.io&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/>
+        </a>
+    </div>
     <div id="veznContainers"></div>
 
     <script>
-        // Vezinler ve heceler
         const vezinler = [
             { pattern: "-.--/-.--/-.--/-.-", heceler: ["fâ", "i", "lâ", "tün", "fâ", "i", "lâ", "tün", "fâ", "i", "lâ", "tün", "fâ", "i", "tün"] },
             { pattern: "..--/..--/..--/..-", heceler: ["fe", "i", "lâ", "tün", "fe", "i", "lâ", "tün", "fe", "i", "lâ", "tün", "fe", "i", "lün"] },
@@ -107,13 +110,12 @@
             { pattern: ".-.-/..--/.-.-/..-", heceler: ["me", "fâ", "i", "lün", "fe", "i", "lâ", "tün", "me", "fâ", "i", "lün", "fe", "i", "lün"] }
         ];
 
-        // Ses oluşturma
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let activeTimeouts = []; // Aktif zamanlayıcıları takip etmek için
-        let activeOscillators = []; // Aktif osilatörleri takip etmek için
+        let activeTimeouts = [];
+        let activeOscillators = [];
 
         function playEmChord(duration, instrument = 'guitar') {
-            const frequencies = [164.81, 196.00, 246.94]; // E3, G3, B3 (Mi minör akoru)
+            const frequencies = [164.81, 196.00, 246.94];
             const gainNode = audioContext.createGain();
             gainNode.connect(audioContext.destination);
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -124,23 +126,21 @@
                 oscillator.type = instrument === 'guitar' ? 'sawtooth' : 'sine';
                 oscillator.connect(gainNode);
                 oscillator.start();
-                activeOscillators.push(oscillator); // Osilatörü takip et
+                activeOscillators.push(oscillator);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
                 setTimeout(() => oscillator.stop(), duration);
             });
         }
 
-        // Tüm animasyonları ve sesleri durdur
         function stopAll() {
-            activeTimeouts.forEach(timeout => clearTimeout(timeout)); // Tüm zamanlayıcıları temizle
+            activeTimeouts.forEach(timeout => clearTimeout(timeout));
             activeTimeouts = [];
-            activeOscillators.forEach(osc => osc.stop()); // Tüm osilatörleri durdur
+            activeOscillators.forEach(osc => osc.stop());
             activeOscillators = [];
-            document.querySelectorAll('.bar').forEach(bar => bar.classList.remove('highlight')); // Tüm vurguları kaldır
+            document.querySelectorAll('.bar').forEach(bar => bar.classList.remove('highlight'));
             document.querySelectorAll('.hece').forEach(hece => hece.classList.remove('highlight'));
         }
 
-        // Çubukları ve heceleri oluştur
         function createBars() {
             const containersDiv = document.getElementById('veznContainers');
             containersDiv.innerHTML = '';
@@ -180,13 +180,12 @@
                 }
                 containersDiv.appendChild(vezinContainer);
                 vezinContainer.addEventListener('click', () => {
-                    stopAll(); // Önceki animasyonu durdur
-                    startAnimation(index); // Yeni animasyonu başlat
+                    stopAll();
+                    startAnimation(index);
                 });
             });
         }
 
-        // Animasyon ve ses (sadece çalan hece için renk değişimi)
         function startAnimation(vezinIndex) {
             const vezin = vezinler[vezinIndex];
             const vezinContainer = document.getElementById(`vezin-${vezinIndex}`);
@@ -233,9 +232,7 @@
             }
         }
 
-        // Sayfa yüklendiğinde çubukları oluştur
         window.onload = createBars;
     </script>
-    <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdivanedebiyati.github.io&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 </body>
 </html>
