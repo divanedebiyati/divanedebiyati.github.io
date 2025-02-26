@@ -6,9 +6,6 @@
     <title>Vezin Sesli Okuma</title>
     <style>
         body {
-            <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdivanedebiyati.github.io&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
-            <a href="aruz%20vezni.html">Aruz Vezni</a>
-
             font-family: Arial, sans-serif;
             margin: 20px;
             overflow-x: auto;
@@ -30,9 +27,9 @@
             text-align: center;
         }
         .bar {
-            transition: background 0.5s ease; /* Gradient için background kullandım */
-            border-radius: 5px; /* Yuvarlak köşeler */
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Gölge efekti */
+            transition: background 0.5s ease;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
         }
         .long {
             width: 20px;
@@ -43,8 +40,8 @@
             height: 20px;
         }
         .highlight {
-            background: linear-gradient(135deg, #ffcc00, #ff9900); /* Vurgu için gradient */
-            box-shadow: 2px 2px 10px rgba(255, 204, 0, 0.5); /* Parlak gölge */
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            box-shadow: 2px 2px 10px rgba(255, 204, 0, 0.5);
         }
         .hece {
             font-size: 12px;
@@ -52,24 +49,24 @@
             margin-top: 5px;
             word-wrap: break-word;
             max-width: 20px;
-            color: #000; /* Heceler siyah */
+            color: #000;
         }
         .hece.highlight {
-            color: #fff; /* Vurgu sırasında beyaz */
+            color: #fff;
         }
         .spacer {
             display: inline-block;
             width: 20px;
             height: 40px;
         }
-        /* Daha koyu gökkuşağı renkleri (gradient ile) */
+        /* Daha koyu gökkuşağı renkleri */
         #vezin-0 .bar { background: linear-gradient(135deg, #990000, #cc0000); }
         #vezin-1 .bar { background: linear-gradient(135deg, #994d00, #cc6600); }
         #vezin-2 .bar { background: linear-gradient(135deg, #999900, #cccc00); }
         #vezin-3 .bar { background: linear-gradient(135deg, #009900, #00cc00); }
         #vezin-4 .bar { background: linear-gradient(135deg, #000099, #0000cc); }
         #vezin-5 .bar { background: linear-gradient(135deg, #1a0033, #330066); }
-        
+
         @media (max-width: 600px) {
             .bar-container {
                 margin-right: 2px;
@@ -96,148 +93,6 @@
     </style>
 </head>
 <body>
-    <h1>ARUZ VEZNİ</h1>
-    <div id="veznContainers"></div>
 
-    <script>
-        // Vezinler ve heceler
-        const vezinler = [
-            { pattern: "-.--/-.--/-.--/-.-", heceler: ["fâ", "i", "lâ", "tün", "fâ", "i", "lâ", "tün", "fâ", "i", "lâ", "tün", "fâ", "i", "tün"] },
-            { pattern: "..--/..--/..--/..-", heceler: ["fe", "i", "lâ", "tün", "fe", "i", "lâ", "tün", "fe", "i", "lâ", "tün", "fe", "i", "lün"] },
-            { pattern: ".---/.---/.---/.---", heceler: ["me", "fâ", "î", "lün", "me", "fâ", "î", "lün", "me", "fâ", "î", "lün", "me", "fâ", "î", "lün"] },
-            { pattern: "--./-.-./.--./-.-", heceler: ["mef", "û", "lü", "fâ", "i", "lâ", "tü", "me", "fâ", "î", "lü", "fâ", "i", "lün"] },
-            { pattern: "--./.--./.--./.--", heceler: ["mef", "û", "lü", "me", "fâ", "î", "lü", "me", "fâ", "î", "lü", "fe", "û", "lün"] },
-            { pattern: ".-.-/..--/.-.-/..-", heceler: ["me", "fâ", "i", "lün", "fe", "i", "lâ", "tün", "me", "fâ", "i", "lün", "fe", "i", "lün"] }
-        ];
-
-        // Ses oluşturma
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let activeTimeouts = [];
-        let activeOscillators = [];
-
-        function playEmChord(duration, instrument = 'guitar') {
-            const frequencies = [164.81, 196.00, 246.94]; // E3, G3, B3 (Mi minör akoru)
-            const gainNode = audioContext.createGain();
-            gainNode.connect(audioContext.destination);
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-
-            frequencies.forEach(freq => {
-                const oscillator = audioContext.createOscillator();
-                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-                oscillator.type = instrument === 'guitar' ? 'sawtooth' : 'sine';
-                oscillator.connect(gainNode);
-                oscillator.start();
-                activeOscillators.push(oscillator);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-                setTimeout(() => oscillator.stop(), duration);
-            });
-        }
-
-        // Tüm animasyonları ve sesleri durdur
-        function stopAll() {
-            activeTimeouts.forEach(timeout => clearTimeout(timeout));
-            activeTimeouts = [];
-            activeOscillators.forEach(osc => osc.stop());
-            activeOscillators = [];
-            document.querySelectorAll('.bar').forEach(bar => bar.classList.remove('highlight'));
-            document.querySelectorAll('.hece').forEach(hece => hece.classList.remove('highlight'));
-        }
-
-        // Çubukları ve heceleri oluştur
-        function createBars() {
-            const containersDiv = document.getElementById('veznContainers');
-            containersDiv.innerHTML = '';
-
-            vezinler.forEach((vezin, index) => {
-                const vezinContainer = document.createElement('div');
-                vezinContainer.classList.add('vezin-container');
-                vezinContainer.id = `vezin-${index}`;
-                let heceIndex = 0;
-
-                for (let char of vezin.pattern) {
-                    if (char === '-' || char === '.') {
-                        const barContainer = document.createElement('div');
-                        barContainer.classList.add('bar-container');
-
-                        const bar = document.createElement('div');
-                        bar.classList.add('bar');
-                        if (char === '-') {
-                            bar.classList.add('long');
-                        } else if (char === '.') {
-                            bar.classList.add('short');
-                        }
-
-                        const hece = document.createElement('div');
-                        hece.classList.add('hece');
-                        hece.textContent = vezin.heceler[heceIndex];
-                        heceIndex++;
-
-                        barContainer.appendChild(bar);
-                        barContainer.appendChild(hece);
-                        vezinContainer.appendChild(barContainer);
-                    } else if (char === '/') {
-                        const spacer = document.createElement('div');
-                        spacer.classList.add('spacer');
-                        vezinContainer.appendChild(spacer);
-                    }
-                }
-                containersDiv.appendChild(vezinContainer);
-                vezinContainer.addEventListener('click', () => {
-                    stopAll();
-                    startAnimation(index);
-                });
-            });
-        }
-
-        // Animasyon ve ses
-        function startAnimation(vezinIndex) {
-            const vezin = vezinler[vezinIndex];
-            const vezinContainer = document.getElementById(`vezin-${vezinIndex}`);
-            const barContainers = vezinContainer.querySelectorAll('.bar-container');
-            let delay = 0;
-            let barIndex = 0;
-
-            for (let char of vezin.pattern) {
-                if (char === '-') {
-                    const barContainer = barContainers[barIndex];
-                    const bar = barContainer.querySelector('.bar');
-                    const hece = barContainer.querySelector('.hece');
-                    const timeout = setTimeout(() => {
-                        bar.classList.add('highlight');
-                        hece.classList.add('highlight');
-                        playEmChord(400, 'guitar');
-                        setTimeout(() => {
-                            bar.classList.remove('highlight');
-                            hece.classList.remove('highlight');
-                        }, 400);
-                    }, delay);
-                    activeTimeouts.push(timeout);
-                    delay += 400;
-                    barIndex++;
-                } else if (char === '.') {
-                    const barContainer = barContainers[barIndex];
-                    const bar = barContainer.querySelector('.bar');
-                    const hece = barContainer.querySelector('.hece');
-                    const timeout = setTimeout(() => {
-                        bar.classList.add('highlight');
-                        hece.classList.add('highlight');
-                        playEmChord(200, 'piano');
-                        setTimeout(() => {
-                            bar.classList.remove('highlight');
-                            hece.classList.remove('highlight');
-                        }, 200);
-                    }, delay);
-                    activeTimeouts.push(timeout);
-                    delay += 200;
-                    barIndex++;
-                } else if (char === '/') {
-                    delay += 500;
-                }
-            }
-        }
-
-        // Sayfa yüklendiğinde çubukları oluştur
-        window.onload = createBars;
-    </script>
-</body>
-</html>
+    <a href="https://hits.seeyoufarm.com">
+        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdivanedebiyati.github.io&count_bg=%2379C83D&title_bg=%23555555&icon=&
