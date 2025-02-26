@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şiir Analiz Sayfası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 800px;
+            display: flex;
+        }
+        .sidebar {
+            width: 200px;
+            padding-right: 20px;
+        }
+        .content {
+            width: 600px;
+        }
+        .poem {
+            text-align: center;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #infoArea {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="poem">
+        <h2>Şiir</h2>
+        <p>Gül yüzünde göreli zülfün kemendin<br>
+        Kametinden belürür serv-i revânım</p>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <button onclick="showInfo('kelimeler')">Kelimeler</button>
+            <button onclick="showInfo('mazmun')">Mazmun Bilgisi</button>
+            <button onclick="showInfo('nesir')">Nesre Çeviri</button>
+            <button onclick="showInfo('turkce')">Günümüz Türkçesine Aktarım</button>
+            <button onclick="showInfo('serh')">Şerh</button>
+        </div>
+        <div class="content">
+            <div id="infoArea"></div>
+        </div>
+    </div>
+
+    <script>
+        const infoContent = {
+            kelimeler: "zülfün: saç\nkemendin: kement, tuzak\nkametinden: boyundan\nserv-i revân: yürüyen selvi, sevgili",
+            mazmun: "Bu beyitte sevgilinin saçı tuzağa, boyu ise selvi ağacına benzetilmiştir. Klasik şiirde sık kullanılan mazmunlardır.",
+            nesir: "Gül yüzünde saçlarının kementini gördüğümden beri, boyundan yürüyen selvi gibi sevgilim beliriyor.",
+            turkce: "Senin gül gibi yüzünde saçlarını gördüğümdan beri, boyun bana yürüyen bir selvi ağacı gibi sevgilimi hatırlatıyor.",
+            serh: "Bu beyit, divan şiirinde sevgilinin güzelliğini doğa imgeleriyle tasvir etme geleneğine uygundur. Şair, sevgilinin yüzünü güle, saçlarını kemende, boyunu ise servi ağacına benzeterek idealize edilmiş bir güzellik portresi çizer."
+        };
+
+        function showInfo(type) {
+            const infoArea = document.getElementById('infoArea');
+            infoArea.innerHTML = `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3><p>${infoContent[type]}</p>`;
+        }
+    </script>
+</body>
+</html>
