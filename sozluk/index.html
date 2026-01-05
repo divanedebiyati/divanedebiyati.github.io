@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>En Fazla Kullanılan Kelimeler Sözlüğü</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a33; --text:#eef2ff; --muted:#a8b0d6; --accent:#7c3aed; }
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body {
+      background: radial-gradient(1200px 800px at 30% 20%, #18224a 0%, var(--bg) 55%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+    .wrap { width: min(720px, 100%); }
+    .header {
+      display:flex; gap:12px; align-items: baseline; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+    .score { color: var(--muted); font-size: 13px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+    .prompt { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+    .lang {
+      user-select: none;
+      cursor: pointer;
+      border-radius: 16px;
+      padding: 22px 16px;
+      text-align: center;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 750;
+      letter-spacing: .3px;
+      background: rgba(124, 58, 237, .14);
+      border: 1px solid rgba(124, 58, 237, .35);
+      transition: transform .08s ease, background .18s ease, border-color .18s ease;
+    }
+    .lang:active { transform: scale(0.99); }
+    .reveal {
+      margin-top: 14px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      min-height: 44px;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center;
+      color: var(--text);
+    }
+    .reveal.hidden { color: var(--muted); }
+    .controls {
+      display:flex; gap:10px; flex-wrap: wrap;
+      margin-top: 14px; justify-content: center;
+    }
+    button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 650;
+      transition: background .15s ease, transform .08s ease, border-color .15s ease;
+    }
+    button:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); }
+    button:active { transform: scale(0.99); }
+    .primary {
+      background: rgba(124, 58, 237, .22);
+      border-color: rgba(124, 58, 237, .45);
+    }
+    .primary:hover { background: rgba(124, 58, 237, .30); }
+    .footer {
+      margin-top: 10px;
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .kbd {
+      display:inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
+      color: var(--text);
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>En Fazla Kullanılan Kelimeler Sözlüğü</h1>
+      <div class="score">
+        Açılan dil: <span id="seenCount">0</span> / <span id="totalCount">0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="prompt">Kelimenin Türkçe karşılığı için kelime üzerine tıklayınız...</p>
+
+      <div id="langCard" class="lang" role="button" tabindex="0" aria-label="Kelimeye tıkla">
+        —
+      </div>
+
+      <div id="revealBox" class="reveal hidden">
+        (Kelime burada görünecek)
+      </div>
+
+      <div class="controls">
+        <button id="nextBtn" class="primary">Sonraki Kelime</button>
+        <button id="showBtn">Cevabı Göster</button>
+        <button id="resetBtn">Sıfırla</button>
+      </div>
+
+      <div class="footer">
+        Kısayollar: <span class="kbd">Enter</span> cevap göster/gizle
+        <span class="kbd">→</span> sonraki kelime
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 📌 Dil listesi: "language" ekrana gelir, "family" tıklayınca gösterilir.
+    // İstersen burayı büyütebilirsin.
+
+const items = [
+
+  // DOĞA
+  { language: " âb, mâ", family: "su" },
+  { language: " âfitâb, hurşîd, şems", family: "güneş" },
+  { language: " ahter, sitâre, necm, kevkeb", family: "yıldız" },
+  { language: " âsumân, sipihr, semâ, felek", family: "gök" },
+  { language: " bâd", family: "yel" },
+  { language: " bârân, rahmet", family: "yağmur" },
+  { language: " berk", family: "şimşek" },
+  { language: " cûy, nehr", family: "ırmak" },
+  { language: " deşt, sahrâ", family: "kır" },
+  { language: " deryâ, bahr", family: "deniz" },
+  { language: " ebr, sehâb", family: "bulut" },
+  { language: " hâk", family: "toprak" },
+  { language: " jâle, şebnem", family: "çiğ" },
+  { language: " kenâr", family: "kıyı" },
+  { language: " kûh, cebel, cibâl", family: "dağ" },
+  { language: " mâh, meh, kamer", family: "ay" },
+  { language: " mâh-ı nev, hilâl", family: "yeni ay" },
+  { language: " seng, hacer", family: "taş" },
+  { language: " ser-çeşme", family: "pınar" },
+  { language: " serd / germ", family: "soğuk / sıcak" },
+
+  // İNSAN VÜCUDU
+  { language: " bâzû", family: "kol" },
+  { language: " dehen, fem", family: "ağız" },
+  { language: " dem, nefes", family: "soluk" },
+  { language: " dendân, sin", family: "diş" },
+  { language: " dest, yed", family: "el" },
+  { language: " dîdâr, çehre, rû, vech", family: "yüz" },
+  { language: " dîde, çeşm, ayn", family: "göz" },
+  { language: " dil, kalb", family: "yürek" },
+  { language: " dûş", family: "omuz" },
+  { language: " ebrû", family: "kaş" },
+  { language: " endâm, kâmet", family: "boy" },
+  { language: " engüşt, benân", family: "parmak" },
+  { language: " eşk", family: "gözyaşı" },
+  { language: " gerden", family: "boyun" },
+  { language: " gîsû", family: "saç" },
+  { language: " gûş", family: "kulak" },
+  { language: " hâl", family: "ben" },
+  { language: " hûn, dem", family: "kan" },
+  { language: " leb", family: "dudak" },
+  { language: " miyân", family: "bel" },
+  { language: " pây, kadem", family: "ayak" },
+  { language: " ser, re’s", family: "baş" },
+  { language: " sîne, sadr", family: "göğüs" },
+  { language: " ten, vücûd", family: "gövde" },
+  { language: " zânû", family: "diz" },
+  { language: " zebân", family: "dil" },
+  { language: " zenahdân, zekan", family: "çene" },
+  { language: " zülf", family: "saç" },
+
+  // HAYVANLAR
+  { language: " ankebût", family: "örümcek" },
+  { language: " âhû, gazal", family: "geyik" },
+  { language: " bâz, şâhîn", family: "doğan" },
+  { language: " bûm, bûm", family: "baykuş" },
+  { language: " bülbül, hezâr, andelîb", family: "bülbül" },
+  { language: " esb, semend, feres", family: "at" },
+  { language: " ester", family: "katır" },
+  { language: " gâv", family: "öküz" },
+  { language: " gürbe, hirre", family: "kedi" },
+  { language: " gürg", family: "kurt" },
+  { language: " har, himâr", family: "eşek" },
+  { language: " kebûter", family: "güvercin" },
+  { language: " mâhî, hût", family: "balık" },
+  { language: " mâr", family: "yılan" },
+  { language: " mûr", family: "karınca" },
+  { language: " murg, tayr", family: "kuş" },
+  { language: " şîr, esed", family: "aslan" },
+  { language: " tûtî", family: "papağan" },
+  { language: " üştür, cemel", family: "deve" },
+  { language: " zenbûr, nahl", family: "arı" },
+  // SIK GEÇEN İSİMLER
+  { language: " âhen", family: "demir" },
+  { language: " ârzû, matlûb", family: "dilek" },
+  { language: " âsitân, südde", family: "eşik" },
+  { language: " âsîb, gam, gussa", family: "gam" },
+  { language: " âsiyâb", family: "değirmen" },
+  { language: " âstîn", family: "yen" },
+  { language: " âşiyan", family: "yuva" },
+  { language: " âyîne, mir’ât", family: "ayna" },
+  { language: " bâğ, bostân", family: "bahçe" },
+  { language: " bahâr", family: "bahar" },
+  { language: " bâlîn", family: "yastık" },
+  { language: " bend, kayd", family: "bağ" },
+  { language: " bende, abd", family: "kul" },
+  { language: " bîm, havf", family: "korku" },
+  { language: " bîmâr, marîz", family: "hasta" },
+  { language: " bister, firâş", family: "yatak" },
+  { language: " bûy, râyiha", family: "koku" },
+  { language: " cây, mekân", family: "yer" },
+  { language: " çâh, çeh", family: "kuyu" },
+  { language: " çerâğ, şem‘", family: "mum" },
+  { language: " dâmen", family: "etek" },
+  { language: " dâniş, ilm", family: "ilim" },
+  { language: " dârû, ilâç", family: "ilaç" },
+  { language: " der, bâb", family: "kapı" },
+  { language: " derbân, bevvâb", family: "kapıcı" },
+  { language: " derd", family: "dert" },
+  { language: " diyâr", family: "ülke" },
+  { language: " dost, yâr, cânân, mahbûb", family: "sevgili" },
+  { language: " dûd, duhân", family: "tütün" },
+  { language: " dürr, mürvârîd, lü’lü", family: "inci" },
+  { language: " dürûğ, kizb", family: "yalan" },
+  { language: " düşmân, hasm, adû", family: "düşman" },
+  { language: " efsûn, sihr", family: "büyü" },
+  { language: " engübîn, asel", family: "bal" },
+  { language: " engüşter, hâtem", family: "yüzük" },
+  { language: " firâk, hicr, hicrân", family: "ayrılık" },
+  { language: " genc, hazîne", family: "hazine" },
+  { language: " gerd, gubâr", family: "toz" },
+  { language: " girîbân, ceyb", family: "yaka" },
+  { language: " gûr, mezâr", family: "mezar" },
+  { language: " hâb, nevm", family: "uyku" },
+  { language: " hâne, dâr, beyt", family: "ev" },
+  { language: " hazân", family: "güz" },
+  { language: " hıred, akl", family: "akıl" },
+  { language: " katre", family: "damla" },
+  { language: " keştî, sefîne", family: "gemi" },
+  { language: " merg, mevt", family: "ölüm" },
+  { language: " mey, bâde, mül, şarâb", family: "şarap" },
+  { language: " mihr, aşk, muhabbet", family: "sevgi" },
+  { language: " mihmân, müsâfir", family: "konuk" },
+  { language: " nân, hubz", family: "ekmek" },
+  { language: " pend, nush", family: "öğüt" },
+  { language: " per, bâl, cenâh", family: "kanat" },
+  { language: " renc, zahmet, azâb", family: "zahmet" },
+  { language: " rûz, yevm", family: "gün" },
+  { language: " sâl, sene", family: "yıl" },
+  { language: " sâye, zıll", family: "gölge" },
+  { language: " sîm, fidda", family: "gümüş" },
+  { language: " şeb, leyl", family: "gece" },
+  { language: " şekker, sükker", family: "şeker" },
+  { language: " tâbistan, sayf", family: "yaz" },
+  { language: " zahm, cerîha", family: "yara" },
+  { language: " zehr, sem", family: "zehir" },
+  { language: " zer, zeheb", family: "altın" },
+  { language: " zindegî, ömr", family: "hayat" },
+  // SIFATLAR
+  { language: " âheste / tîz", family: "yavaş / hızlı" },
+  { language: " âsân / düşvâr", family: "kolay / güç" },
+  { language: " bülend / pest, âli / dûn", family: "yüksek / alçak" },
+  { language: " büzürg / hurde, kebîr / sagîr", family: "büyük / küçük" },
+  { language: " dîvâne, mecnûn", family: "deli" },
+  { language: " dûr / nezdîk, baîd / karîb", family: "uzak / yakın" },
+  { language: " endek / bisyâr, kalîl / kesîr", family: "az / çok" },
+  { language: " gedâ / tüvân, fakîr / ganî", family: "fakir / zengin" },
+  { language: " germ / serd, hâr / bârid", family: "sıcak / soğuk" },
+  { language: " hûb / zişt", family: "güzel / çirkin" },
+  { language: " köhne / nev, kadîm / cedîd", family: "eski / yeni" },
+  { language: " nâdân, câhil", family: "cahil" },
+  { language: " nihân, mahfî", family: "gizli" },
+  { language: " nîk / bed", family: "iyi / kötü" },
+  { language: " peydâ, âşikâr, zâhir, ayân", family: "açık" },
+  { language: " pür / tehî, memlû / hâlî", family: "dolu / boş" },
+  { language: " rûşen / tîre, münevver / muzlim", family: "aydınlık / karanlık" },
+  { language: " telh / şîrîn", family: "acı / tatlı" },
+  { language: " vîrân, harâb", family: "yıkık" }
+
+
+
+    ];
+
+    // UI elemanları
+    const langCard = document.getElementById("langCard");
+    const revealBox = document.getElementById("revealBox");
+    const nextBtn = document.getElementById("nextBtn");
+    const showBtn = document.getElementById("showBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const seenCountEl = document.getElementById("seenCount");
+    const totalCountEl = document.getElementById("totalCount");
+
+    totalCountEl.textContent = String(items.length);
+
+    let currentIndex = -1;
+    let revealed = false;
+    let seen = 0;
+
+    function randIndexAvoiding(prevIdx) {
+      if (items.length <= 1) return 0;
+      let idx = prevIdx;
+      while (idx === prevIdx) {
+        idx = Math.floor(Math.random() * items.length);
+      }
+      return idx;
+    }
+
+    function renderNewLanguage() {
+      currentIndex = randIndexAvoiding(currentIndex);
+      revealed = false;
+
+      langCard.textContent = items[currentIndex].language;
+      revealBox.textContent = "(Kelime burada görünecek)";
+      revealBox.classList.add("hidden");
+
+      seen += 1;
+      seenCountEl.textContent = String(seen);
+    }
+
+    function toggleReveal(forceShow = null) {
+      if (currentIndex < 0) return;
+
+      if (forceShow === true) revealed = true;
+      else if (forceShow === false) revealed = false;
+      else revealed = !revealed;
+
+      if (revealed) {
+        revealBox.textContent = items[currentIndex].family;
+        revealBox.classList.remove("hidden");
+      } else {
+        revealBox.textContent = "(Kelime burada görünecek)";
+        revealBox.classList.add("hidden");
+      }
+    }
+
+    // Olaylar
+    langCard.addEventListener("click", () => toggleReveal());
+    langCard.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleReveal();
+      }
+    });
+
+    nextBtn.addEventListener("click", renderNewLanguage);
+    showBtn.addEventListener("click", () => toggleReveal(true));
+    resetBtn.addEventListener("click", () => {
+      currentIndex = -1;
+      revealed = false;
+      seen = 0;
+      seenCountEl.textContent = "0";
+      langCard.textContent = "—";
+      revealBox.textContent = "(Kelime burada görünecek)";
+      revealBox.classList.add("hidden");
+    });
+
+    // Klavye kısayolları
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") renderNewLanguage();
+      if (e.key === "Enter") toggleReveal();
+    });
+
+    // İlk dil otomatik gelsin
+    renderNewLanguage();
+  </script>
+</body>
+</html>
