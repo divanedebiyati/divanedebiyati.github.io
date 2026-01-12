@@ -1,4 +1,65 @@
-<!DOCTYPE html>
+import os
+import json
+import re
+
+def parse_sentence_file(file_path):
+    """Cümle dosyasını okur ve ders listesi oluşturur."""
+    lessons = []
+    
+    # Farklı encoding türlerini dene
+    encodings = ['utf-8', 'utf-8-sig', 'latin-1', 'cp1254', 'windows-1254']
+    
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, 'r', encoding=encoding) as f:
+                content = f.readlines()
+                used_encoding = encoding
+                print(f"✓ Dosya başarıyla okundu (encoding: {encoding})")
+                break
+        except UnicodeDecodeError:
+            continue
+        except Exception as e:
+            print(f"  Hata ({encoding}): {e}")
+            continue
+    
+    if not content:
+        print("⚠ HATA: Dosya hiçbir encoding ile okunamadı!")
+        return None
+    
+    # Boş satırları temizle
+    lines = [line.strip() for line in content if line.strip()]
+    
+    if len(lines) < 2:
+        print("⚠ HATA: Dosyada yeterli satır yok!")
+        return None
+    
+    # Her iki satır bir ders
+    for i in range(0, len(lines), 2):
+        if i + 1 < len(lines):
+            persian = lines[i].strip()
+            turkish = lines[i + 1].strip()
+            
+            if persian and turkish:
+                lesson_num = len(lessons) + 1
+                lessons.append({
+                    'id': lesson_num,
+                    'persian': persian,
+                    'turkish': turkish,
+                    'audio': f'{lesson_num}.mp3'
+                })
+    
+    return lessons
+
+def create_html_with_lessons(lessons, audio_path, output_path):
+    """Dersleri içeren HTML dosyasını oluşturur."""
+    
+    # Dersler JSON formatında
+    lessons_json = json.dumps(lessons, ensure_ascii=False, indent=8)
+    
+    html_template = '''<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -395,7 +456,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🇮🇷 Farsça Öğreniyorum</h1>
+            <h1>Farsça Öğreniyorum</h1>
             <p class="subtitle">Her gün bir cümle, her gün bir adım</p>
         </div>
 
@@ -420,29 +481,10 @@
 
     <script>
         // Dersler - Python scripti tarafından otomatik oluşturuldu
-        const lessons = [
-        {
-                "id": 1,
-                "persian": "هواپیما ساعت ۹:۱۵ شب در فرودگاه مهرآباد تهران بر زمین نشست.",
-                "turkish": "Uçak saat 21.15’te Tahran Mehrabad Havalimanı’na indi.",
-                "audio": "1.mp3"
-        },
-        {
-                "id": 2,
-                "persian": "زیگموند همراه با سایر مسافران ایرانی و خارجی از هواپیما پیاده شد.",
-                "turkish": "Zigmund, diğer İranlı ve yabancı yolcularla birlikte uçaktan indi.",
-                "audio": "2.mp3"
-        },
-        {
-                "id": 3,
-                "persian": "زیگموند اهل سوئد استو. او برای تحصیل در رشتهٔ ادبیات فارسی به ایران آمده است",
-                "turkish": "Zigmund, İsveçlidir. Fars edebiyatı bölümünde eğitim almak için, İran’a gelmiştir.",
-                "audio": "3.mp3"
-        }
-];
+        const lessons = LESSONS_DATA;
         
         // Ses dosyalarının bulunduğu klasör
-        const AUDIO_BASE_PATH = "sesler";
+        const AUDIO_BASE_PATH = "AUDIO_PATH";
 
         let currentIndex = 0;
         let audio = null;
@@ -588,4 +630,84 @@
         updateLesson();
     </script>
 </body>
-</html>
+</html>'''
+    
+    # Template'e verileri ekle
+    html_content = html_template.replace('LESSONS_DATA', lessons_json)
+    # Göreceli yol kullan (GitHub için)
+    html_content = html_content.replace('AUDIO_PATH', 'sesler')
+    
+    # HTML dosyasını kaydet
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    
+    print(f"✓ HTML dosyası oluşturuldu: {output_path}")
+    print(f"✓ Toplam {len(lessons)} ders yüklendi")
+
+def main():
+    # Dosya yollarını belirle
+    base_path = r"C:\Users\okapl\Drive'ım\python\farsça"
+    audio_folder = os.path.join(base_path, "sesler")
+    output_file = os.path.join(base_path, "farsi-ogrenme-app.html")
+    
+    print("Farsça Öğrenme Uygulaması Oluşturucu")
+    print("=" * 50)
+    
+    # Cümle dosyasını farklı uzantılarla dene
+    possible_names = ["cumle", "cumle.txt", "cümle", "cümle.txt", "cumle.text"]
+    sentence_file = None
+    
+    for name in possible_names:
+        test_path = os.path.join(base_path, name)
+        if os.path.exists(test_path):
+            sentence_file = test_path
+            break
+    
+    if not sentence_file:
+        print(f"⚠ HATA: Cümle dosyası bulunamadı!")
+        print(f"\nAradığım dosya isimleri:")
+        for name in possible_names:
+            print(f"  - {name}")
+        print(f"\nKlasör içeriği ({base_path}):")
+        try:
+            files = os.listdir(base_path)
+            for f in files:
+                print(f"  - {f}")
+        except:
+            print("  Klasör okunamadı!")
+        return
+    
+    print(f"✓ Cümle dosyası bulundu: {sentence_file}")
+    print(f"Ses klasörü: {audio_folder}")
+    print(f"Çıktı dosyası: {output_file}")
+    print("=" * 50)
+    
+    if not os.path.exists(audio_folder):
+        print(f"⚠ Uyarı: Ses klasörü bulunamadı: {audio_folder}")
+        print("Sesler çalmayabilir.")
+    
+    # Cümleleri oku
+    print("\nCümleler okunuyor...")
+    lessons = parse_sentence_file(sentence_file)
+    
+    if not lessons:
+        print("⚠ HATA: Cümleler okunamadı!")
+        return
+    
+    print(f"✓ {len(lessons)} ders başarıyla okundu")
+    
+    # HTML oluştur
+    print("\nHTML dosyası oluşturuluyor...")
+    create_html_with_lessons(lessons, audio_folder, output_file)
+    
+    print("\n" + "=" * 50)
+    print("✓ İşlem tamamlandı!")
+    print(f"\nUygulamayı açmak için: {output_file}")
+    print("\nKullanım:")
+    print("  - Sesler otomatik olarak yüklenecektir")
+    print("  - Üçgen butona tıklayarak sesi çalabilirsiniz")
+    print("  - Ok tuşları ile dersler arasında gezinebilirsiniz")
+    print("  - Boşluk tuşu ile sesi başlatabilir/durdurabilirsiniz")
+
+if __name__ == "__main__":
+    main()
