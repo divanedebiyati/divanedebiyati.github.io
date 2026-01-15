@@ -1,1 +1,269 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fuzûlî – Türkçe Divan</title>
+
+  <!-- ===== FARSÇA FONTLAR ===== -->
+  <style>
+    @font-face {
+      font-family: "TraditionalNaskh";
+      src: url("TraditionalNaskh.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "TraditionalNaskh";
+      src: url("TraditionalNaskhBold.ttf") format("truetype");
+      font-weight: bold;
+      font-style: normal;
+    }
+  </style>
+
+  <!-- ===== GENEL TASARIM ===== -->
+  <style>
+    :root{
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: rgba(17,24,39,.10);
+      --shadow: 0 10px 30px rgba(17,24,39,.08);
+      --btn: #111827;
+      --btnText: #ffffff;
+      --btn2: #ffffff;
+      --btn2Text: #111827;
+      --btnBorder: rgba(17,24,39,.18);
+      --accent: #2563eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 22px 18px 30px;
+    }
+
+    .header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .title{
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .subtitle{
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .meta{
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .card{
+      margin-top: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .blockTitle{
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* ===== FARSÇA BEYİT ===== */
+    .fa{
+      font-family: "TraditionalNaskh", "Amiri", serif;
+      font-size: 32px;
+      line-height: 1.9;
+      text-align: center;
+      direction: rtl;
+      unicode-bidi: plaintext;
+      white-space: pre-line;
+      padding: 14px 14px 10px;
+      border-radius: 16px;
+      background: rgba(37,99,235,.04);
+      border: 1px solid rgba(37,99,235,.14);
+    }
+
+    .sep{
+      height: 1px;
+      background: rgba(17,24,39,.10);
+      margin: 20px 0;
+    }
+
+    /* ===== TRANSLİTERASYON ===== */
+    .tr{
+      font-size: 17px;
+      line-height: 1.8;
+      white-space: pre-line;
+      padding: 2px 4px;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 20px;
+    }
+
+    button{
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .primary{
+      background: var(--btn);
+      color: var(--btnText);
+    }
+
+    .secondary{
+      background: var(--btn2);
+      color: var(--btn2Text);
+      border-color: var(--btnBorder);
+    }
+
+    button:disabled{
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .statusRow{
+      display:flex;
+      justify-content:space-between;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .kbd{
+      font-family: ui-monospace, monospace;
+      padding: 2px 6px;
+      border: 1px solid rgba(17,24,39,.14);
+      border-radius: 8px;
+      background: rgba(17,24,39,.03);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="title">Fuzûlî – Türkçe Divan</div>
+        <div class="subtitle">
+          <span class="kbd">R</span> rastgele •
+          <span class="kbd">←</span>/<span class="kbd">→</span> önceki / sonraki
+        </div>
+      </div>
+      <div class="meta" id="countInfo"></div>
+    </div>
+
+    <div class="card">
+      <div class="blockTitle">Beyit</div>
+      <div class="fa" id="faText">Yükleniyor…</div>
+
+      <div class="sep"></div>
+
+      <div class="blockTitle"></div>
+      <div class="tr" id="trText"></div>
+
+      <div class="controls">
+        <button class="primary" id="btnRandom">Rastgele</button>
+        <button class="secondary" id="btnPrev">Önceki</button>
+        <button class="secondary" id="btnNext">Sonraki</button>
+      </div>
+
+      <div class="statusRow">
+        <div id="status"></div>
+        <div>Ali Nihad Tarlan</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    const DATA = (window.BEYT_DATA || []).filter(x => x && x.fa && x.tr);
+
+    const faText = document.getElementById("faText");
+    const trText = document.getElementById("trText");
+    const btnRandom = document.getElementById("btnRandom");
+    const btnPrev = document.getElementById("btnPrev");
+    const btnNext = document.getElementById("btnNext");
+    const countInfo = document.getElementById("countInfo");
+    const status = document.getElementById("status");
+
+    let stack = [];
+    let cursor = -1;
+
+    function setButtons(){
+      btnPrev.disabled = cursor <= 0;
+      btnNext.disabled = cursor >= stack.length - 1;
+    }
+
+    function show(idx, push=false){
+      const it = DATA[idx];
+      if (!it) return;
+      faText.textContent = it.fa;
+      trText.textContent = it.tr;
+
+      if (push){
+        if (cursor < stack.length - 1) stack = stack.slice(0, cursor + 1);
+        stack.push(idx);
+        cursor = stack.length - 1;
+      }
+      setButtons();
+      status.textContent = `Gösterimde: ${cursor + 1}/${stack.length}`;
+    }
+
+    function rand(){
+      if (DATA.length <= 1) return 0;
+      let i = stack[cursor];
+      while (i === stack[cursor]) i = Math.floor(Math.random() * DATA.length);
+      return i;
+    }
+
+    btnRandom.onclick = () => show(rand(), true);
+    btnPrev.onclick = () => cursor > 0 && show(stack[--cursor]);
+    btnNext.onclick = () => cursor < stack.length - 1 && show(stack[++cursor]);
+
+    window.addEventListener("keydown", e => {
+      if (e.key === "r" || e.key === "R") btnRandom.click();
+      if (e.key === "ArrowLeft") btnPrev.click();
+      if (e.key === "ArrowRight") btnNext.click();
+    });
+
+    countInfo.textContent = `${DATA.length} beyit`;
+    show(Math.floor(Math.random() * DATA.length), true);
+  </script>
+</body>
+</html>
 
