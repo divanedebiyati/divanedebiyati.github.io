@@ -159,6 +159,7 @@
     .box:nth-child(3) { animation-delay: 0.3s; }
     .box:nth-child(4) { animation-delay: 0.4s; }
     .box:nth-child(5) { animation-delay: 0.5s; }
+    .box:nth-child(6) { animation-delay: 0.6s; }
   </style>
 </head>
 <body>
@@ -191,6 +192,14 @@
     </div>
     
     <div class="box">
+      <a href="sultan_sairler/">
+        <span class="icon">👑</span>
+        <h2>Sultan Şairler</h2>
+        <p>Osmanlı padişahlarının şiirleri</p>
+      </a>
+    </div>
+    
+    <div class="box">
       <a href="farsi-ogrenme/">
         <span class="icon">فارسی</span>
         <h2>Farsça Öğreniyorum</h2>
@@ -212,5 +221,19 @@
   </footer>
 </body>
 </html>
+```
 
+**Değişiklikler:**
+1. Yeni kutu eklendi: "Sultan Şairler" - 👑 ikonu ile
+2. Animasyon gecikmesi için `.box:nth-child(6)` eklendi
+3. Link: `sultan_sairler/` klasörüne yönlendiriyor
 
+Klasör yapınız şöyle olmalı:
+```
+├── index.html
+├── sultan_sairler/
+│   ├── index.html
+│   └── poets-data.js
+├── btk/
+├── Fuzuli_turkce_divan/
+└── ... (diğer klasörler)
