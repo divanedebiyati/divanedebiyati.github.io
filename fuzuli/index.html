@@ -175,16 +175,11 @@
 </head>
 
 <body>
-  <body>
-
-<nav style="margin-bottom:20px;">
-  <a href="../index.html">← Kütüphaneler</a>
-  &nbsp;|&nbsp;
-  <a href="../btk/index.html">Berceste Beyitler</a>
-</nav>
-
-
-<!-- senin mevcut içerik buradan devam eder -->
+  <nav style="margin-bottom:20px;">
+    <a href="../index.html">← Kütüphaneler</a>
+    &nbsp;|&nbsp;
+    <a href="../btk/index.html">Berceste Beyitler</a>
+  </nav>
 
   <div class="wrap">
     <div class="header">
@@ -232,39 +227,38 @@
     const countInfo = document.getElementById("countInfo");
     const status = document.getElementById("status");
 
-    let stack = [];
-    let cursor = -1;
+    let currentIndex = 0;
 
     function setButtons(){
-      btnPrev.disabled = cursor <= 0;
-      btnNext.disabled = cursor >= stack.length - 1;
+      btnPrev.disabled = currentIndex <= 0;
+      btnNext.disabled = currentIndex >= DATA.length - 1;
     }
 
-    function show(idx, push=false){
+    function show(idx){
+      if (idx < 0 || idx >= DATA.length) return;
       const it = DATA[idx];
       if (!it) return;
+      
+      currentIndex = idx;
       faText.textContent = it.fa;
       trText.textContent = it.tr;
-
-      if (push){
-        if (cursor < stack.length - 1) stack = stack.slice(0, cursor + 1);
-        stack.push(idx);
-        cursor = stack.length - 1;
-      }
+      
       setButtons();
-      status.textContent = `Gösterimde: ${cursor + 1}/${stack.length}`;
+      status.textContent = `Beyit ${currentIndex + 1} / ${DATA.length}`;
     }
 
     function rand(){
       if (DATA.length <= 1) return 0;
-      let i = stack[cursor];
-      while (i === stack[cursor]) i = Math.floor(Math.random() * DATA.length);
+      let i = currentIndex;
+      while (i === currentIndex) {
+        i = Math.floor(Math.random() * DATA.length);
+      }
       return i;
     }
 
-    btnRandom.onclick = () => show(rand(), true);
-    btnPrev.onclick = () => cursor > 0 && show(stack[--cursor]);
-    btnNext.onclick = () => cursor < stack.length - 1 && show(stack[++cursor]);
+    btnRandom.onclick = () => show(rand());
+    btnPrev.onclick = () => show(currentIndex - 1);
+    btnNext.onclick = () => show(currentIndex + 1);
 
     window.addEventListener("keydown", e => {
       if (e.key === "r" || e.key === "R") btnRandom.click();
@@ -273,9 +267,8 @@
     });
 
     countInfo.textContent = `${DATA.length} beyit`;
-    show(Math.floor(Math.random() * DATA.length), true);
+    // İlk beyit ile başla
+    show(0);
   </script>
 </body>
 </html>
-
-
